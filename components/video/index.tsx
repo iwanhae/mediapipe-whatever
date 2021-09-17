@@ -15,9 +15,9 @@ const Camera = () => {
   })
   pose.setOptions({
     selfieMode: false,
-    modelComplexity: 2,
+    modelComplexity: 0,
     smoothLandmarks: true,
-    enableSegmentation: true,
+    enableSegmentation: false,
     smoothSegmentation: true,
     minDetectionConfidence: 0.5,
     minTrackingConfidence: 0.5,
@@ -27,6 +27,7 @@ const Camera = () => {
   useEffect(() => {  
     const canvas = canvasRef.current as HTMLCanvasElement
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D
+    const prev = new Map()
     ctx.font = "30px Arial";
     pose.onResults((results: Pose.Results): void => {
       const cur = results.poseWorldLandmarks
@@ -43,6 +44,26 @@ const Camera = () => {
         ctx.fillText(`Thumb Distance: ${tmp.toFixed(4)}`, 10, 50)
         ctx.fillText(`x: ${cur[k].x.toFixed(4)} y: ${cur[k].y.toFixed(4)} z: ${cur[k].z.toFixed(4)}`, 10, 100)
         ctx.fillText(`vis: ${cur[k].visibility?.toFixed(4)}`, 10, 130)
+
+        cur.map((e, i) => {
+          let x = (e.x + 1) * 320
+          let y = (e.y + 1) * 480
+          const v = e.visibility ? e.visibility : 0
+          const c = `${255 - ((v + 1) / 2 * 255)}`
+
+          const p  = prev.get(i)
+          if (p != undefined) {
+            ctx.fillStyle = `rgb(255,0,0)`
+            ctx.fillRect(x, y, 10, 10)
+            const alpha = 0.7
+            const beta = 1 - alpha
+            x = (x * alpha) + (p.x * beta)
+            y = (y * alpha) + (p.y * beta)
+          }
+          ctx.fillStyle = `rgb(${c},${c},${c})`
+          ctx.fillRect(x, y, 10, 10)
+          prev.set(i, {x, y})
+        })
       } catch {
         ctx.clearRect(0,0,1000,1000)
         ctx.fillText(`ERROR`, 10, 50)
@@ -75,7 +96,7 @@ const Camera = () => {
 
   return (
     <div>
-      <canvas width="600px" ref={canvasRef}></canvas>
+      <canvas width="640px" height="480px" ref={canvasRef}></canvas>
       <div>
         <video ref={videoRef}></video>
       </div>      

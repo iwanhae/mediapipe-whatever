@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "release": "next build && next export && mc cp -r out/* home/public"
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1631210127",
